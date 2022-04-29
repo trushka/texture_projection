@@ -35,7 +35,7 @@ loader.load('HOUSE_INTERIOR_MESH.fbx', obj=>{
 		onBeforeCompile: sh=> {
 			//console.log(sh);
 
-			//uniforms (can be stored as a vars or object properties):
+			//uniforms (can be stored as a vars or object properties and change along with the texture during user navigation):
 			sh.uniforms.center = projSource = {value: vec3(0,0,0)};
 			sh.uniforms.rotation = projRotation = {value: -.25} // projection y-rotation in turns
 
