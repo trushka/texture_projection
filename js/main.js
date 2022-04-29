@@ -48,8 +48,8 @@ loader.load('HOUSE_INTERIOR_MESH.fbx', obj=>{
 			${sh.fragmentShader.replace('#include <map_fragment>', `
 			float posLength = length(vPosition);
 			float UVy = asin( clamp( vPosition.y/posLength, -1., 1. ) ) / PI + 0.5;
-			float UVx = atan( vPosition.z, vPosition.x ) / PI2 + rotation;
-			diffuseColor *=  texture2D( map, vec2(fwidth(UVx)>.5 ? .5+rotation : UVx, UVy) );`)}`;
+			float UVx = atan( vPosition.z, vPosition.x ) / PI2;
+			diffuseColor *=  texture2D( map, vec2( (fwidth(UVx)>.5 ? fract(UVx) : UVx) + rotation, UVy) );`)}`;
 		}
 	});
 	material.map.anisotropy=renderer.capabilities.getMaxAnisotropy(); //optional, for bettrg quality near the "poles"
