@@ -8,7 +8,7 @@ export const PI=Math.PI,
 	vec3=function(...args) {return new THREE.Vector3(...args)},
 	vec4=function(...args) {return new THREE.Vector4(...args)};
 
-export let geometry, material, mesh;
+export let projSource, projRotation, material, mesh;
 export const 
 	container=document.querySelector('.workspace'),
 	canvas = container.querySelector('canvas'),
@@ -33,21 +33,26 @@ loader.load('HOUSE_INTERIOR_MESH.fbx', obj=>{
 		map: new THREE.TextureLoader().load('map.jpg'),
 		side: 2,
 		onBeforeCompile: sh=> {
-			console.log(sh);
-			sh.uniforms.center={value: vec3()}
+			//console.log(sh);
+
+			//uniforms (can be stored as a vars or object properties):
+			sh.uniforms.center = projSource = {value: vec3(0,0,0)};
+			sh.uniforms.rotation = projRotation = {value: -.25} // projection y-rotation in turns
 
 			sh.vertexShader=`varying vec3 vPosition;
 			uniform vec3 center;
 			${sh.vertexShader.replace('void main() {', 'void main() {\n vPosition=position-center;')}`;
 
 			sh.fragmentShader=`varying vec3 vPosition;
+			uniform float rotation;
 			${sh.fragmentShader.replace('#include <map_fragment>', `
 			float posLength = length(vPosition);
-			float UVy = asin( clamp( vPosition.y/posLength, -1., 1. ) ) * RECIPROCAL_PI + 0.5;
-			float UVx = atan( vPosition.z, vPosition.x ) * RECIPROCAL_PI2-.25;
-			diffuseColor *= texture2D( map, vec2(UVx, UVy) );`)}`;
+			float UVy = asin( clamp( vPosition.y/posLength, -1., 1. ) ) / PI + 0.5;
+			float UVx = atan( vPosition.z, vPosition.x ) / PI2 + rotation;
+			diffuseColor *=  texture2D( map, vec2(fwidth(UVx)>.5 ? .5+rotation : UVx, UVy) );`)}`;
 		}
-	})
+	});
+	material.map.anisotropy=renderer.capabilities.getMaxAnisotropy(); //optional, for bettrg quality near the "poles"
 	material.map.wrapS=THREE.RepeatWrapping;
 	scene.add(mesh);
 })
